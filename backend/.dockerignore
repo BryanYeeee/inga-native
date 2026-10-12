@@ -1,0 +1,5 @@
+.venv
+.env.staging
+.env.production
+.env.example
+generate_random_key.py

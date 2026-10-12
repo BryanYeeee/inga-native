@@ -13,18 +13,22 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 import os
 from pathlib import Path
 
+import dj_database_url
+from dotenv import load_dotenv
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "django-insecure-local-dev-only")
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() in {"1", "true", "yes"}
+DEBUG = os.environ.get("DJANG0_DEBUG", True)
 
 _default_hosts = "localhost,127.0.0.1,10.0.2.2"
 ALLOWED_HOSTS = [
@@ -82,11 +86,17 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
+default_config = dj_database_url.config(default=os.environ["DATABASE_URL"],
+                                        conn_max_age = 600,
+                                        conn_health_checks= True)
+
+#Makes every request atomic, so if an exception occurs, the entire transaction will be rolled back.
+default_config["ATOMIC_REQUESTS"] = True
+default_config["ENGINE"] = "django.db.backends.postgresql"
+
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+
+    'default': default_config
 }
 
 
