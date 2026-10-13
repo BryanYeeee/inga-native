@@ -101,8 +101,12 @@ With the virtual environment active, from `backend/`:
 
 ```bash
 python -m pip install -r requirements.txt
-python manage.py migrate
+python -m pip install -e .
 ```
+
+The editable install puts `config`, `api` and the other apps on the import path. That is what `DJANGO_SETTINGS_MODULE=config.settings` relies on, and it is what lets your IDE resolve imports.
+
+The backend itself runs in Docker, together with its database, so migrations and tests are run inside the container. See [Running the backend application](#running-the-backend-application).
 
 ### 4. Frontend environment
 
@@ -124,18 +128,14 @@ Restart Expo after changing `.env`.
 
 ### 5. Run Django
 
-From `backend/`, with the virtual environment active:
+The backend and its database run in Docker. See [Running the backend application](#running-the-backend-application).
+
+The container publishes port 8000, so `http://127.0.0.1:8000` reaches it from your machine. The iOS Simulator can use `127.0.0.1` and the Android Emulator reaches it through `10.0.2.2`.
+
+For a physical device, add your computer's LAN IP to `DJANGO_ALLOWED_HOSTS` in `backend/.env.local`, then restart the container:
 
 ```bash
-python manage.py runserver 0.0.0.0:8000
-```
-
-`0.0.0.0` lets a phone on the same network reach the API. The iOS Simulator can use `127.0.0.1`. The Android Emulator reaches the computer through `10.0.2.2`.
-
-For a physical device, include your computer's LAN IP in `DJANGO_ALLOWED_HOSTS` before starting Django:
-
-```bash
-DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,10.0.2.2,192.168.1.20 python manage.py runserver 0.0.0.0:8000
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,10.0.2.2,192.168.1.20
 ```
 
 Replace `192.168.1.20` with your own address.
@@ -216,7 +216,7 @@ docker start <container_id>
 ```bash
 docker exec -it <container_id> pytest
 ```
-You should see that three tests run and pass. 
+You should see that six tests run and pass. 
 
 Alternatively, you can run the command below to run the tests without having to find the container id:
 ```bash
@@ -244,3 +244,33 @@ docker compose up --build --force-recreate backend
 
 Do NOT change the Dockerfile or docker-compose.yml files without approval from your PLs.
 
+
+
+## Project structure
+
+The backend has one Django app per workstream, so that parallel work does not collide in a single `models.py`:
+
+```text
+backend/src/
+  config/        settings, root urls, wsgi/asgi
+  api/           health check
+  accounts/      the User model (AUTH_USER_MODEL) and authentication
+  projects/      projects, sites and regions
+  submissions/   the forms field workers submit
+  photos/        image records and Cloudflare R2
+```
+
+Each app is mounted at `/api/<app>/` by `config/urls.py` and owns its own `urls.py`, so adding an endpoint does not mean editing a shared file.
+
+`AUTH_USER_MODEL` is `accounts.User`, set before there is any data, because changing the user model later means dropping the database.
+
+## Frontend checks
+
+From `frontend/`:
+
+```bash
+npx tsc --noEmit
+npm run lint
+```
+
+CI runs both of these, plus the backend tests, on every pull request.
