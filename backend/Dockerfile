@@ -6,7 +6,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /inga-native
 
-# Copy the requirements into the /ephemera directory inside the container
+# Copy the requirements into the /inga-native directory inside the container
 COPY requirements.txt .
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -19,10 +19,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 
-# Copy the actual source code.
+# Copy the actual source - and test - code.
 COPY . .
+
+#Install the package inside the container, so that the test code can properly run.
+RUN pip install --no-cache-dir -e .
 
 # Expose port 8000 so that localhost can reach the backend.
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+ENV PYTHONPATH=/inga-native
+
+CMD ["python", "src/manage.py", "runserver", "0.0.0.0:8000"]
