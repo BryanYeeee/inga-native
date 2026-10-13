@@ -14,12 +14,13 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv()
+load_dotenv(BASE_DIR.parent / ".env.local")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
@@ -28,7 +29,7 @@ load_dotenv()
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get("DJANG0_DEBUG", True)
+DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() in {"1", "true", "yes"}
 
 _default_hosts = "localhost,127.0.0.1,10.0.2.2"
 ALLOWED_HOSTS = [
@@ -50,6 +51,10 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "api",
+    "accounts",
+    "projects",
+    "submissions",
+    "photos",
 ]
 
 MIDDLEWARE = [
@@ -63,7 +68,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "src.config.urls"
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
@@ -86,7 +91,14 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-default_config = dj_database_url.config(default=os.environ["DATABASE_URL"],
+DATABASE_URL = os.environ.get("DATABASE_URL")
+if not DATABASE_URL:
+    raise ImproperlyConfigured(
+        "DATABASE_URL is not set. Copy backend/.env.example to backend/.env.local "
+        "and fill it in, or set it in the environment for staging and production."
+    )
+
+default_config = dj_database_url.config(default=DATABASE_URL,
                                         conn_max_age = 600,
                                         conn_health_checks= True)
 
@@ -98,6 +110,12 @@ DATABASES = {
 
     'default': default_config
 }
+
+# Set before the first migration, because changing it later means dropping
+# the database.
+AUTH_USER_MODEL = "accounts.User"
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # Password validation
