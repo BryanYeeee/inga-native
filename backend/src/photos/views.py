@@ -8,6 +8,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 
+MAX_CONTENT_TYPE_LENGTH = 255 # 255 characters is the maximum length for a content type string	
+PRESIGNED_URL_EXPIRATION_SECONDS = 900 # 900 seconds = 15 minutes
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def upload_url(request):
@@ -19,9 +23,18 @@ def upload_url(request):
 			status=status.HTTP_400_BAD_REQUEST,
 		)
 
-	if not isinstance(content_type, str) or len(content_type) > 255:
+	if (
+		not isinstance(content_type, str)
+		or len(content_type) > MAX_CONTENT_TYPE_LENGTH
+	):
 		return Response(
 			{"detail": "content_type must be valid."},
+			status=status.HTTP_400_BAD_REQUEST,
+		)
+
+	if content_type not in ("image/jpeg", "image/png"):
+		return Response(
+			{"detail": "content_type must be image/jpeg or image/png."},
 			status=status.HTTP_400_BAD_REQUEST,
 		)
 
@@ -40,7 +53,7 @@ def upload_url(request):
 			"Key": key,
 			"ContentType": content_type,
 		},
-		ExpiresIn=900,  # 900 seconds = 15 minutes TODO: make a defined constant
+		ExpiresIn=PRESIGNED_URL_EXPIRATION_SECONDS,
 	)
 
 	return Response({"key": key, "upload_url": upload_url})

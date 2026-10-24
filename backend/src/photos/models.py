@@ -3,6 +3,8 @@ from django.db import models
 
 
 class Photo(models.Model):
+    """Store metadata for an uploaded photo."""
+
     key = models.CharField(max_length=1024)
 
     content_type = models.CharField(max_length=255)
