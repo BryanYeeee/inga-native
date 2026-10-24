@@ -115,6 +115,9 @@ def create_photo(request):
 			status=status.HTTP_400_BAD_REQUEST,
 		)
 
+	if isinstance(size_bytes, str) and size_bytes.isdecimal():
+		size_bytes = int(size_bytes)
+
 	if (
 		isinstance(size_bytes, bool)
 		or not isinstance(size_bytes, int)
