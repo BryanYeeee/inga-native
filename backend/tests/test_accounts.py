@@ -4,7 +4,7 @@ from rest_framework.test import APIClient
 
 LOGIN_URL = "/api/accounts/login/"
 REFRESH_URL = "/api/accounts/refresh/"
-PROTECTED_URL = "/api/some-protected-endpoint/"  # TODO: replace with a real endpoint
+PROTECTED_URL = "/api/projects/"  # TODO: replace with a real endpoint
 
 USERNAME = "testuser"
 PASSWORD = "testpass123"
@@ -54,7 +54,7 @@ def test_invalid_login(api_client, user):
     assert "access" not in response.data
 
 
-def test_protected_endpoint_requires_token(api_client):
+def test_protected_endpoint_requires_token(api_client, db):
     response = api_client.get(PROTECTED_URL)
     assert response.status_code == 401
 
@@ -73,6 +73,6 @@ def test_refresh_returns_new_access_token(api_client, user):
     assert "access" in response.data
 
 
-def test_refresh_with_invalid_token(api_client):
+def test_refresh_with_invalid_token(api_client, db):
     response = api_client.post(REFRESH_URL, {"refresh": "not-a-real-token"}, format="json")
     assert response.status_code == 401
