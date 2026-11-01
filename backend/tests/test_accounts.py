@@ -4,7 +4,7 @@ from rest_framework.test import APIClient
 
 LOGIN_URL = "/api/accounts/login/"
 REFRESH_URL = "/api/accounts/refresh/"
-PROTECTED_URL = "/api/projects/"  # TODO: replace with a real endpoint
+PROTECTED_URL = "/api/accounts/me/"  # TODO: replace with a real endpoint
 
 USERNAME = "testuser"
 PASSWORD = "testpass123"
