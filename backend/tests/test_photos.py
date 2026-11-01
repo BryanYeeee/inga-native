@@ -2,20 +2,8 @@ from unittest.mock import Mock, patch
 from uuid import uuid4
 
 import pytest
-from django.contrib.auth import get_user_model
 
 from photos.models import Photo
-
-
-@pytest.fixture
-def authenticated_client(client, db):
-    user = get_user_model().objects.create_user(
-        username="photo-uploader",
-        password="not-a-real-password",
-    )
-    client.force_login(user)
-    return client, user
-
 
 @pytest.mark.django_db
 def test_upload_url_generates_presigned_url(authenticated_client):
