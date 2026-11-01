@@ -6,12 +6,12 @@ from .constants import MAX_CONTENT_TYPE_LENGTH, PHOTO_KEY_PREFIX
 
 
 class ContentTypeSerializer(serializers.Serializer):
-	content_type = serializers.CharField(
+	content_type: serializers.CharField = serializers.CharField(
 		max_length=MAX_CONTENT_TYPE_LENGTH,
 		allow_blank=False,
 	)
 
-	def validate_content_type(self, value):
+	def validate_content_type(self, value: str) -> str:
 		if value not in ("image/jpeg", "image/png"):
 			raise serializers.ValidationError(
 				"content_type must be image/jpeg or image/png."
@@ -20,10 +20,10 @@ class ContentTypeSerializer(serializers.Serializer):
 
 
 class CreatePhotoSerializer(ContentTypeSerializer):
-	key = serializers.CharField()
-	size_bytes = serializers.IntegerField(min_value=0)
+	key: serializers.CharField = serializers.CharField()
+	size_bytes: serializers.IntegerField = serializers.IntegerField(min_value=0)
 
-	def validate_key(self, value):
+	def validate_key(self, value: str) -> str:
 		if (
 			not value.startswith(PHOTO_KEY_PREFIX)
 			or value.count("/") != 1

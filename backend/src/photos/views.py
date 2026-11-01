@@ -5,6 +5,7 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from .constants import (
@@ -16,7 +17,7 @@ from .serializers import ContentTypeSerializer, CreatePhotoSerializer
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def upload_url(request):
+def upload_url(request: Request) -> Response:
 	serializer = ContentTypeSerializer(data=request.data)
 	serializer.is_valid(raise_exception=True)
 	content_type = serializer.validated_data["content_type"]
@@ -44,7 +45,7 @@ def upload_url(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
-def create_photo(request):
+def create_photo(request: Request) -> Response:
 	serializer = CreatePhotoSerializer(data=request.data)
 	serializer.is_valid(raise_exception=True)
 	key = serializer.validated_data["key"]
