@@ -1,9 +1,20 @@
+import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View, Button} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { getHealth } from "@/services/api";
 import { useRouter } from "expo-router";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import { apiFetch, clearSession, getHealth } from "@/services/api";
 
 type ConnectionState = "loading" | "connected" | "error";
 
@@ -40,16 +51,33 @@ export default function HomeScreen() {
         ? "API Status: Connected"
         : "API Status: Not connected";
 
+  const [username, setUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    apiFetch("/api/accounts/me/")
+      .then((r) => r.json())
+      .then((d) => setUsername(d.username));
+  }, []);
+
+  async function handleLogout() {
+    await clearSession();
+    router.replace("/login");
+  }
+
   return (
     <SafeAreaView style={styles.screen}>
       <View style={styles.content}>
         <Text style={styles.title}>Inga</Text>
         <Text style={styles.status}>{statusLabel}</Text>
+        <Text>{username ?? "Loading user..."}</Text>
         {state === "loading" ? <ActivityIndicator /> : null}
         {state === "error" ? <Text style={styles.detail}>{detail}</Text> : null}
 
         <Button title="Open projects" onPress={() => router.push("/projects")} />
 
+        <Pressable onPress={handleLogout}>
+          <Text>Log out</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
