@@ -15,23 +15,6 @@ except ImportError:
 pytestmark = pytest.mark.django_db
 
 
-@pytest.fixture
-def submission_context():
-    user = get_user_model().objects.create_user(username="worker")
-    other_user = get_user_model().objects.create_user(username="other-worker")
-    project = Project.objects.create(
-        name="Inga project",
-        log_schema={
-            "Inga seeds": "numerical",
-            "Soil tested": "boolean",
-            "Notes": "text",
-        },
-    )
-    region = Region.objects.create(name="Central region")
-    site = Site.objects.create(project=project, region=region, name="North farm")
-    return user, other_user, site
-
-
 def test_valid_submission_is_created_for_authenticated_user(submission_context):
     user, _, site = submission_context
     submission_uuid = uuid.uuid4()
